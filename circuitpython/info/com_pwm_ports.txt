@@ -1,0 +1,47 @@
+# SYSINFO = SYSTEMINFO()
+# SYSINFO.show_uart_pins()
+# SYSINFO.show_pwm_pins()
+'''
+UART Pin combinations
+RX pin: board.A3         TX pin: board.A2
+RX pin: board.SDA        TX pin: board.A2
+RX pin: board.A1         TX pin: board.A4
+RX pin: board.A5         TX pin: board.A4
+RX pin: board.VOLTAGE_MONITOR    TX pin: board.D1
+RX pin: board.D0         TX pin: board.D1
+RX pin: board.D10        TX pin: board.D1
+RX pin: board.D11        TX pin: board.D1
+RX pin: board.D12        TX pin: board.D1
+RX pin: board.MISO       TX pin: board.D1
+RX pin: board.MOSI       TX pin: board.D1
+RX pin: board.D10        TX pin: board.D12
+RX pin: board.D11        TX pin: board.D12
+RX pin: board.D13        TX pin: board.D12
+RX pin: board.D5         TX pin: board.D12
+RX pin: board.D6         TX pin: board.D12
+RX pin: board.D9         TX pin: board.D12
+RX pin: board.VOLTAGE_MONITOR    TX pin: board.D13
+RX pin: board.D0         TX pin: board.D13
+RX pin: board.D10        TX pin: board.D13
+RX pin: board.D11        TX pin: board.D13
+RX pin: board.D12        TX pin: board.D13
+RX pin: board.MISO       TX pin: board.D13
+RX pin: board.MOSI       TX pin: board.D13
+RX pin: board.D10        TX pin: board.SCK
+RX pin: board.D11        TX pin: board.SCK
+RX pin: board.D13        TX pin: board.SCK
+RX pin: board.D5         TX pin: board.SCK
+RX pin: board.D6         TX pin: board.SCK
+RX pin: board.D9         TX pin: board.SCK
+RX pin: board.MISO       TX pin: board.D5
+RX pin: board.MOSI       TX pin: board.D5
+RX pin: board.SCK        TX pin: board.D5
+RX pin: board.D6         TX pin: board.D5
+RX pin: board.D9         TX pin: board.D5
+RX pin: board.A3         TX pin: board.SCL
+RX pin: board.SDA        TX pin: board.SCL
+RX pin: board.SCL        TX pin: board.SDA
+
+PWM Pins
+PWM on: A1,A3,D0,D1,D10,D11,D12,D13,D15,D17,D25,D5,D6,D9,RX,SCK,SCL,SDA,TX
+'''

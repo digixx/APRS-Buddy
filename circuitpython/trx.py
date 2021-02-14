@@ -15,13 +15,13 @@ class DRA818x():
 
 	def __init__(self, uart, mic, ptt_pin, enabled_pin, squelch_pin):
 		self._uart = uart
+		self._tnc = TNC(mic)
 		self._ptt = ptt_pin # Transmit if True (MOSFET Converter installed)
 		self._ptt.direction = digitalio.Direction.OUTPUT
 		self._enabled = enabled_pin # If True module enabled / Off = Sleep
 		self._enabled.direction = digitalio.Direction.OUTPUT
 		self._squelch = squelch_pin # If True Squelch = active (no sound)
 		self._aprs = APRS()
-		self._tnc = TNC(mic)
 
 	@property
 	def ptt(self):
