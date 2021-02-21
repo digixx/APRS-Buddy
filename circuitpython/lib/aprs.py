@@ -70,8 +70,7 @@ class APRS():
         self._information = information
         self._ax25_information_field = self._set_ax25_information(self._information)
 
-    @property
-    def get_ax25_frame(self):
+    def create_ax25_frame(self):
         ax25_frame = []
         ax25_frame += self._ax25_destination
         ax25_frame += self._ax25_source
@@ -79,9 +78,9 @@ class APRS():
         ax25_frame += self._ax25_control_field
         ax25_frame += self._ax25_protocol_id
         ax25_frame += self._ax25_information_field
-        self._ax25_fcs = crc.calc_crc(ax25_frame)
-        ax25_frame.append(crc.get_crc_low_byte(self._ax25_fcs))
-        ax25_frame.append(crc.get_crc_high_byte(self._ax25_fcs))
+        self._ax25_fcs = aprs_crc.calc_crc(ax25_frame)
+        ax25_frame.append(aprs_crc.get_crc_low_byte(self._ax25_fcs))
+        ax25_frame.append(aprs_crc.get_crc_high_byte(self._ax25_fcs))
 
         if self.debug == True:
             print("\n\n// *** AX25 Packet ***")
@@ -106,7 +105,7 @@ class APRS():
     def _set_ax25_source(self, source):
         name, ssid = self._split_address_ssid(source)
         n = bytearray(name + '      ')[:6]
-        s = int(ssid) & 0x07
+        s = int(ssid) & 0x0F
         ax25_source = self._shift_1bit_left(n)
         ax25_source += [0xe0 | (s << 1)]
         return ax25_source
@@ -121,7 +120,7 @@ class APRS():
     def _set_ax25_destination(self, destination):
         name, ssid = self._split_address_ssid(destination)
         n = bytearray(name + '      ')[:6]
-        s = int(ssid) & 0x07
+        s = int(ssid) & 0x0F
         ax25_dest = self._shift_1bit_left(n)
         ax25_dest += [0xf0 | (s << 1)]
         return ax25_dest
@@ -143,7 +142,7 @@ class APRS():
             for address in digilist:
                 name, ssid = self._split_address_ssid(address)
                 n = bytearray(name + '      ')[:6]
-                s = int(ssid) & 0x07
+                s = int(ssid) & 0x0F
                 ax25_digi += self._shift_1bit_left(n)
                 ax25_digi += [0xe0 | (s << 1)]
         # set last address bit

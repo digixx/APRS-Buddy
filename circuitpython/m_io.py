@@ -6,6 +6,7 @@ import os
 import board
 import busio
 import digitalio
+
 import neopixel
 from sdcard import SD_Card
 from sensors import BMP280
@@ -13,16 +14,7 @@ from sensors import LIS3DH
 from audio import AUDIO
 from gps import GPS
 from trx import DRA818x
-
-'''
-heartbeat = digitalio.DigitalInOut(board.A2)
-heartbeat.direction = digitalio.Direction.OUTPUT
-heartbeat.value = True
-
-def do_heart_beat():
-    # toggle LED
-    heartbeat.value = not heartbeat.value
-'''
+from voltmeter import VOLTMETER
 
 NEOpix = neopixel.NeoPixel(board.NEOPIXEL, 1)
 NEOpix[0] = (0, 0, 0) # set off
@@ -37,11 +29,6 @@ InfoLED2.value = False
 
 # Create the SPI bus for multiple devices
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-
-def init_audio():
-    dac = board.A0
-    audio = AUDIO(dac)
-    return audio
 
 def init_environment():
     bmp_cs = digitalio.DigitalInOut(board.D6)
@@ -68,10 +55,21 @@ def init_gps():
     return gps
 
 def init_trx():
-    trx_uart = busio.UART(board.SCL, board.SDA, baudrate=9600, timeout=20, receiver_buffer_size=64)
-    trx_mic = digitalio.DigitalInOut(board.A0)
+    # create serial channel
+    trx_uart = busio.UART(board.SDA, board.SCL, baudrate=9600, timeout=2, receiver_buffer_size=32)
+    # create audio channel playing wave data
+    trx_microphon = AUDIO(board.A0)
+    # set digital output for power savings
     trx_enabled = digitalio.DigitalInOut(board.D4)
+    # set digital input for detecting rf reception
     trx_squelch = digitalio.DigitalInOut(board.D12)
+    # set PTT
     trx_ptt = digitalio.DigitalInOut(board.D13)
-    trx = DRA818x(trx_uart, trx_mic, trx_ptt, trx_enabled, trx_squelch)
+    # Init TRX
+    trx = DRA818x(trx_uart, trx_microphon, trx_ptt, trx_enabled, trx_squelch)
     return trx
+
+def init_voltmeter():
+    vmtr = VOLTMETER(board.A3, span=3.3, divider=11)
+    return vmtr
+

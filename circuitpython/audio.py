@@ -28,6 +28,7 @@ class AUDIO():
         self._dac.play(self._dac_waveform, loop = False)
         while self._dac.playing:
             pass
+            
 
 
 

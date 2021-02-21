@@ -16,8 +16,8 @@ class AFSK():
     _space = 1
     _start_frequency = _mark
 
-    _DAC_range = 100
-    _DAC_idle_level = 127
+    _DAC_range = 140
+    _DAC_idle_level = 120
 
     def __init__(self, bps_rate = 1200, frequency_space = 2200, frequency_mark = 1200, _datapoints_per_bit = 30):
         self._bps_rate = bps_rate
@@ -26,19 +26,29 @@ class AFSK():
         self._frequency_space = frequency_space
         self._frequency_mark = frequency_mark
         self._phase = 0
-        self._preamble_head_length = 20
-        self._preamble_tail_length = 5
+        self._preamble_head_length = 90
+        self._preamble_tail_length = 10
+
+        self._space_preemphasis = 1.5
+        self._mark_preemphasis = 0.6
 
         self._datapoints_per_bit = self._sample_rate / self._bps_rate
         self._space_degree_incr = int(360 * self._frequency_space / self._bps_rate / self._datapoints_per_bit)
         self._mark_degree_incr = int(360 * self._frequency_mark / self._bps_rate / self._datapoints_per_bit)
 
-        # calculate static sinus table for every degree
-        self._sinus_table = []
+        # calculate static sinus tables for every degree
+        self._sinus_table_mark = []
         for degree in range(0,360):
             sinus_value = (math.sin(math.pi * 2 * degree / 360))
-            sinus_table_dac_value = round(sinus_value * (self._DAC_range / 2) + self._DAC_idle_level)
-            self._sinus_table.append(sinus_table_dac_value)
+            sinus_table_dac_value = round(sinus_value * (self._DAC_range * self._mark_preemphasis / 2 ) + self._DAC_idle_level)
+            self._sinus_table_mark.append(sinus_table_dac_value)
+
+        self._sinus_table_space = []
+        for degree in range(0,360):
+            sinus_value = (math.sin(math.pi * 2 * degree / 360))
+            sinus_table_dac_value = round(sinus_value * (self._DAC_range * self._space_preemphasis / 2 ) + self._DAC_idle_level)
+            self._sinus_table_space.append(sinus_table_dac_value)
+
         self._init_sequence()
 
     @property
@@ -53,13 +63,13 @@ class AFSK():
 
     def _add_tone_to_sequence(self):
         if self._tone == self._space:
-            phase_incr = self._space_degree_incr
+            for dp in range(0, self._datapoints_per_bit):
+                self._phase = (self._phase + self._space_degree_incr) % 360
+                self._sequence.append(self._sinus_table_space[self._phase])
         else:
-            phase_incr = self._mark_degree_incr
-
-        for dp in range(0, self._datapoints_per_bit):
-            self._phase = (self._phase + phase_incr) % 360
-            self._sequence.append(self._sinus_table[self._phase])
+            for dp in range(0, self._datapoints_per_bit):
+                self._phase = (self._phase + self._mark_degree_incr) % 360
+                self._sequence.append(self._sinus_table_mark[self._phase])
 
         self._bit_stuff_cntr += 1
 
@@ -88,16 +98,16 @@ class AFSK():
                 self._add_tone_to_sequence()
             self._bit_stuff_cntr = 0
 
-    def _prime_dac_level(self, value):
+    def _prime_dac_level(self):
         for x in range(0,50):
-            self._sequence.append(self._sinus_table[0])
+            self._sequence.append(self._DAC_idle_level)
 
-    def calc_afsk_bit_pattern(self, data):
+    def create_afsk_bit_pattern(self, data):
         self._init_sequence()
-        self._prime_dac_level(20)
+        self._prime_dac_level()
         self._add_preamble(self._preamble_head_length)
         for x in range(len(data)):
             self._add_data_byte(data[x])
         self._add_preamble(self._preamble_tail_length)
-        self._prime_dac_level(20)
+        self._prime_dac_level()
         return self._sequence
