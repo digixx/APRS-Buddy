@@ -51,10 +51,11 @@ TRX.tail_tone = 0
 
 TRX.APRS.debug = False
 TRX.APRS.source = 'HB9FZG-11'
-TRX.APRS.information = '>Hello World'
 
 # Voltmeter
 VMTR = m_io.init_voltmeter()
+
+loops = 1
 
 while True:
 	tstart = time.monotonic()
@@ -75,13 +76,20 @@ while True:
 
 		# GPS
 		if GPS.is_valid:
-			# print("Position:", GPS.longitude, GPS.latitude)
+			# print("Position:", GPS.latitude_aprs + '/' + GPS.longitude_aprs, GPS.dhm_aprs)
+			# print("Speed / Course / Alt:", GPS.speed_aprs, GPS.course_aprs, GPS.altitude_aprs)
 			pass
 
 		# show power
 		# print("Voltage: {:.2f}".format(VMTR.voltage))
 
 	if ev5sec.is_due:
-		# TRX.dmo_connect()
-		TRX.send_APRS()
-		sys.exit()
+		if GPS.is_valid:
+			TRX.APRS.information = GPS.aprs_position + " Batt:{:.1f}V".format(VMTR.voltage)
+			# TRX.dmo_connect()
+			print("APRS-MSG:", TRX.APRS.information)
+			if loops > 0:
+				TRX.send_APRS()
+				loops =- 1
+			# sys.exit()
+			# pass
