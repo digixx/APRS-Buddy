@@ -101,6 +101,16 @@ class GPS:
         return data_str
 
     @property
+    def latitude_raw(self):
+        # 47.51
+        return self._gps.latitude
+
+    @property
+    def longitude_raw(self):
+        # 7.59649
+        return self._gps.longitude
+
+    @property
     def latitude(self):
         Deg = '{:d}'.format(int(self._gps.latitude))
         Min = '{0:.3f}'.format((self._gps.latitude % 1) * 60)
@@ -119,24 +129,6 @@ class GPS:
         else:
             EW = "W"
         return Deg,Min,EW
-
-    @property
-    def latitude_log(self):
-        data_str = '{0:.6f}'.format(self._gps.latitude)
-        return data_str
-
-    @property
-    def longitude_log(self):
-        data_str = '{0:.6f}'.format(self._gps.longitude)
-        return data_str
-
-    @property
-    def latitude_raw(self):
-        return self._gps.latitude
-
-    @property
-    def longitude_raw(self):
-        return self._gps.longitude
 
     @property
     def speed(self):
@@ -159,6 +151,71 @@ class GPS:
         if self._gps.altitude_m is not None:
             data_str = '{}'.format(self._gps.altitude_m)
         return data_str
+
+    # ---- APRS ----
+
+    def _latitude_aprs(self):
+        Deg = '{:02d}'.format(int(self._gps.latitude))
+        Min = '{0:.2f}'.format((self._gps.latitude % 1) * 60)
+        if self._gps.latitude > 0:
+            NS = "N"
+        else:
+            NS = "S"
+        return Deg + Min + NS
+
+    def _longitude_aprs(self):
+        Deg = '{:03d}'.format(int(self._gps.longitude))
+        Min = '{0:.2f}'.format((self._gps.longitude % 1) * 60)
+        if self._gps.longitude > 0:
+            EW = "E"
+        else:
+            EW = "W"
+        return Deg + Min + EW
+
+    def _dhm_aprs(self):
+        data_str = '{:02}{:02}{:02}z'.format(
+        self._gps.timestamp_utc.tm_mday,
+        self._gps.timestamp_utc.tm_hour,
+        self._gps.timestamp_utc.tm_min)
+        return data_str
+
+    def _speed_aprs(self):
+        data_str = "000"
+        if self._gps.speed_knots is not None:
+            data_str = '{:03}'.format(int(round(self._gps.speed_knots)))
+        return data_str
+
+    def _course_aprs(self):
+        data_str = "000"
+        if self._gps.track_angle_deg is not None:
+            if self._gps.speed_knots > 0:
+                data_str = '{:03}'.format(int(round(self._gps.track_angle_deg)))
+        return data_str
+
+    def _altitude_aprs(self):
+        data_str = "000000"
+        if self._gps.altitude_m is not None:
+            data_str = '{:06}'.format(int(round(self._gps.altitude_m / 0.3048))) # altitude in feet
+        return data_str
+
+    @property
+    def aprs_position(self):
+        return '@{}{}/{}>{}/{}/A={}'.format(self._dhm_aprs(), self._latitude_aprs(), self._longitude_aprs(), self._course_aprs(), self._speed_aprs(), self._altitude_aprs())
+    
+
+    # ---- LOG ----
+
+    @property
+    def latitude_log(self):
+        data_str = '{0:.6f}'.format(self._gps.latitude)
+        return data_str
+
+    @property
+    def longitude_log(self):
+        data_str = '{0:.6f}'.format(self._gps.longitude)
+        return data_str
+
+
 
 """
 ct = time.monotonic()
