@@ -41,7 +41,12 @@ class DRA818x():
 		self._volume = 4
 		self._tail_tone = 0
 
+		self._debugging = False
+
 	# --- Hardware -------------------
+
+	def debugging(self, mode):
+		self._debugging = mode
 
 	@property
 	def ptt(self):
@@ -126,74 +131,69 @@ class DRA818x():
 	@tail_tone.setter
 	def tail_tone(self, v):
 		self._tail_tone = v
-		# self._set_tail_tone(self._tail_tone)
+
+	def connect(self):
+		# check serial connection
+		if self._debugging == True:
+			print("TRX: connect", end = ": ")
+		command = 'AT+DMOCONNECT\r\n'
+		response = self._send(command)
 
 	def init(self):
 		self._set_group(self._tx_frequency, self._rx_frequency, '0000', self._squelch_level, '0000')
 		self._set_filter(0,0,0)
 
 	def send_APRS(self):
-		print("Start ARPS Sequence")
 		aprs_frame = self.APRS.create_ax25_frame()
 		afsk_bit_pattern = self.AFSK.create_afsk_bit_pattern(aprs_frame)
 
-		self.ptt = self.on
-		time.sleep(0.5)
-		self._mic_audio.play(afsk_bit_pattern)
-		self.ptt = self.off
+		## sending APRS to Air
+		if self._debugging == False:
+			print("TRX: transmit APRS data")
+			self.ptt = self.on
+			time.sleep(0.5)
+			self._mic_audio.play(afsk_bit_pattern)
+			self.ptt = self.off
+		else:
+			print("TRX: play APRS data / sound only, no transmit")
+			self._mic_audio.play(afsk_bit_pattern)
 
 	# --- local functions -----------------
 
 	def _send(self,data):
 		self._uart.write(data.encode())
-		time.sleep(0.)
-		return self._uart.readline()
-
-	def connect(self):
-		# check serial connection
-		command = 'AT+DMOCONNECT\r\n'
-		response = self._send(command)
-		if response != None:
-			msg = ''.join([chr(b) for b in response])
-		print("trx-connect:", msg)
+		response =  self._uart.readline()
+		if self._debugging == True:
+			msg = "N/A"
+			if response != None:
+				msg = ''.join([chr(b) for b in response])
+			print(data, msg)
+		return response
 
 	def _set_group(self, tx_freq, rx_freq, tx_ctcss, sq, rx_ctcss):
 		# set most values at once
+		if self._debugging == True:
+			print("TRX: set group", end = ": ")
 		command = 'AT+DMOSETGROUP=0,{:.4f},{:.4f},{},{},{}\r\n'.format(tx_freq, rx_freq, tx_ctcss, sq, rx_ctcss)
-		print("CMD:", command)
 		response = self._send(command)
-		if response != None:
-			msg = ''.join([chr(b) for b in response])
-		print("trx-setgroup:", msg)
 
 	def _set_volume(self, level):
 		# set audio out volume [1..8]
+		if self._debugging == True:
+			print("TRX: set volume", end = ": ")
 		command = 'AT+DMOSETVOLUME={}\r\n'.format(level)
-		# print("CMD:", command)
 		response = self._send(command)
-		if response != None:
-			msg = ''.join([chr(b) for b in response])
-		print("trx-volume:", msg)
 
 	def _set_tail_tone(self, tone):
 		# set tail tone on or off
+		if self._debugging == True:
+			print("TRX: set tail tone", end = ": ")
 		command = 'AT+SETTAIL={}\r\n'.format(tone)
-		print("CMD:", command)
 		response = self._send(command)
-		if response != None:
-			msg = ''.join([chr(b) for b in response])
-		print("trx-tail-tone:", msg)
 
 	def _set_filter(self, emph, highpass, lowpass):
 		# This command is used to turn on/off Pre/de-emphasis, Highpass, Lowpass filter
+		if self._debugging == True:
+			print("TRX: set filter", end = ": ")
 		command = 'AT+SETFILTER={},{},{}\r\n'.format(emph,highpass,lowpass)
-		# print("CMD:", command)
 		response = self._send(command)
-		if response != None:
-			msg = ''.join([chr(b) for b in response])
-		print("trx-set-filter:", msg)
-
-
-
-
-

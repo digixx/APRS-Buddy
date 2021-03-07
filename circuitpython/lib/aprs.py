@@ -13,12 +13,12 @@ class APRS():
     AX25_APRS_UI_FRAME = 0x03       # Frame Type
     AX25_PROTO_NO_LAYER3 = 0xf0     # Layer 3 protocol
 
-    def __init__(self, source = 'NOCALL-0', destination = 'APNMDM', digipeaters = 'WIDE1-1', information = '>NoText'):
+    def __init__(self, source = 'NOCALL-0', destination = 'APZDIY-12', digipeaters = 'WIDE1-1', information = '>NoText'):
         self.source = source
         self.destination = destination
         self.digipeaters = digipeaters
         self.information = information
-        self.debug = False
+        self._debugging = False
 
         '''
         AX25 - Control field
@@ -82,18 +82,21 @@ class APRS():
         ax25_frame.append(aprs_crc.get_crc_low_byte(self._ax25_fcs))
         ax25_frame.append(aprs_crc.get_crc_high_byte(self._ax25_fcs))
 
-        if self.debug == True:
-            print("\n\n// *** AX25 Packet ***")
-            print("// Dest:", self.destination)
-            print("// Src :", self.source)
-            print("// Digi:", self.digipeaters)
-            print("// CTRL:", self._ax25_control_field)
-            print("// PrID:", self._ax25_protocol_id)
-            print("// Info:", self.information)
-            print("// Len :", len(self._ax25_information_field))
-            print("// CRC :", self._ax25_fcs)
+        if self._debugging == True:
+            print("\n\nAPRS: AX25 packet data")
+            print("APRS: Dest:", self.destination)
+            print("APRS: Src :", self.source)
+            print("APRS: Digi:", self.digipeaters)
+            print("APRS: CTRL:", self._ax25_control_field)
+            print("APRS: PrID:", self._ax25_protocol_id)
+            print("APRS: Info:", self.information)
+            print("APRS: Len :", len(self._ax25_information_field))
+            print("APRS: CRC :", self._ax25_fcs)
 
         return ax25_frame
+
+    def debugging(self, mode):
+        self._debugging = mode        
 
     '''
     *AX25 - Source address

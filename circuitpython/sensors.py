@@ -10,6 +10,7 @@ class BMP280:
     def __init__(self, spi, bmp_cs):
         self._bmp = adafruit_bmp280.Adafruit_BMP280_SPI(spi, bmp_cs)
         self._bmp.sea_level_pressure = 1013
+        self._debugging = False
 
     @property
     def sea_level_pressure(self):
@@ -35,6 +36,14 @@ class BMP280:
     def temp_hi_res(self):
         return self._bmp.temperature
 
+    def debugging(self, mode):
+        self._debugging = mode        
+
+    def info(self):
+        if self._debugging == True:
+            print("BMP:", end = " ")
+            print("Temp: ", self.temp, end = " ")
+            print("Press: ", self.pressure)
 
 class LIS3DH:
 
@@ -46,6 +55,7 @@ class LIS3DH:
 
     def __init__(self, spi, acc_cs):
         self._acc = adafruit_lis3dh.LIS3DH_SPI(spi, acc_cs)
+        self._debugging = False
 
     @property
     def standard_gravity(self):
@@ -55,7 +65,13 @@ class LIS3DH:
     def acceleration(self):
         return self._acc.acceleration
 
+    def debugging(self, mode):
+        self._debugging = mode
 
+    def info(self):
+        if self._debugging == True:
+            x, y, z = [value / self.standard_gravity for value in self.acceleration]
+            print("ACC: x= %0.3fG, y= %0.3fG, z= %0.3fG" % (x, y, z))
 
 """
 ct = time.monotonic()

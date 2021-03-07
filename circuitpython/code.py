@@ -8,20 +8,26 @@ import time
 import events
 import vars
 import m_io
+from beacon import SMARTBEACON
 
 # Declare Events
 ev1sec = events.Events(1)
 ev5sec = events.Events(5)
+ev10sec = events.Events(10)
 
 # Global vars
 gps_fix_status = vars.Values("0")
 
 # GPS Module
 GPS = m_io.init_gps()
+GPS.debugging(True)
 
 # Sensors
 ENV = m_io.init_environment()
+ENV.debugging(True)
+
 ACC = m_io.init_acc()
+ACC.debugging(True)
 
 '''
 # SD Card
@@ -38,8 +44,14 @@ else:
 	print('no SD-Card found\n')
 '''
 
+BEACON = SMARTBEACON()
+BEACON.debugging(True)
+BEACON.enabled = True
+
+
 # TRX
 TRX = m_io.init_trx()
+TRX.debugging(True)
 TRX.enabled = 1
 
 TRX.tx_frequency = 144.800
@@ -50,25 +62,27 @@ TRX.volume = 2
 TRX.tail_tone = 0
 
 TRX.APRS.debug = False
-TRX.APRS.source = 'HB9FZG-11'
+TRX.APRS.source = 'HB9FZG-4'
 
 # Voltmeter
 VMTR = m_io.init_voltmeter()
+VMTR.debugging(True)
 
-loops = 1
+loops = 0
 
 while True:
 	tstart = time.monotonic()
 	GPS.update()
 	tstop = time.monotonic()
+
 	if tstop - tstart > 0.5:
-		print("Update overload")
+		print("MAIN: Update overload")
 
 	if ev1sec.is_due:
 		# Environment
 		# print("Temp / Pressure:", ENV.temp, ENV.pressure)
 		if gps_fix_status.has_changed(GPS.fix > 0):
-			print("GPS-Fix:", GPS.fix)
+			print("GPS: Fix changed:", GPS.fix)
 
 		# ACC Sensor
 		x, y, z = [value / ACC.standard_gravity for value in ACC.acceleration]
@@ -76,20 +90,28 @@ while True:
 
 		# GPS
 		if GPS.is_valid:
-			# print("Position:", GPS.latitude_aprs + '/' + GPS.longitude_aprs, GPS.dhm_aprs)
-			# print("Speed / Course / Alt:", GPS.speed_aprs, GPS.course_aprs, GPS.altitude_aprs)
 			pass
 
+		
 		# show power
 		# print("Voltage: {:.2f}".format(VMTR.voltage))
+
+		BEACON.update(GPS)
 
 	if ev5sec.is_due:
 		if GPS.is_valid:
 			TRX.APRS.information = GPS.aprs_position + " Batt:{:.1f}V".format(VMTR.voltage)
 			# TRX.dmo_connect()
-			print("APRS-MSG:", TRX.APRS.information)
+			# print("APRS-MSG:", TRX.APRS.information)
 			if loops > 0:
 				TRX.send_APRS()
 				loops =- 1
 			# sys.exit()
 			# pass
+
+	if ev10sec.is_due:
+		ENV.info()
+		ACC.info()
+		VMTR.info()
+		GPS.info()
+	

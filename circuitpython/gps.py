@@ -27,6 +27,23 @@ class GPS:
         # Turn on AIC (Active Interference Cancellation)
         self._gps.send_command(b'PMTK286,1')
 
+        self._debugging = False
+
+    def debugging(self, mode):
+        self._debugging = mode
+
+    def info(self):
+        if self._debugging == True:
+            print("GPS:", end = ' ')
+            if self._gps.valid:
+                print("Fix", end = " > ")
+                print("Lat:", self.latitude_log, end = " ")
+                print("Lon:", self.longitude_log, end = " ")
+                print("Heading:", self.heading, end = " ")
+                print("Alt:", self.altitude_txt)
+            else:
+                print(" no valid data")
+
     def update(self):
         self._gps.update()
 
@@ -45,73 +62,111 @@ class GPS:
         else:
             return 0
 
+    # RAW data - for calculations
     @property
-    def satellites(self):
+    def latitude(self):
+        # 47.51
+        return self._gps.latitude
+
+    @property
+    def longitude(self):
+        # 7.59649
+        return self._gps.longitude
+
+    @property
+    def speed_knots(self):
+        data = 0
+        if self._gps.speed_knots is not None:
+            data = self._gps.speed_knots
+        return data
+
+    @property
+    def speed_mph(self):
+        data = 0
+        if self._gps.speed_mph is not None:
+            data = self._gps.speed_mph
+        return data
+
+    @property
+    def speed_kmh(self):
+        data = 0
+        if self._gps.speed_kmh is not None:
+            data = self._gps.speed_kmh
+        return data
+
+    @property
+    def heading(self):
+        data = 0
+        if self._gps.track_angle_deg != None:
+            data = self._gps.track_angle_deg
+        return data
+
+    @property
+    def altitude(self):
+        data = 0
+        if self._gps.altitude_m is not None:
+            data = self._gps.altitude_m
+        return data
+
+    @property
+    def date(self):
+        data_str = '{:02}.{:02}.{:04}'.format(
+        self._gps.timestamp_utc.tm_mday,
+        self._gps.timestamp_utc.tm_mon,
+        self._gps.timestamp_utc.tm_year)
+        return data_str
+
+    @property
+    def reverse_date(self):
+        data_str = '{:04}_{:02}_{:02}'.format(
+        self._gps.timestamp_utc.tm_year,
+        self._gps.timestamp_utc.tm_mon,
+        self._gps.timestamp_utc.tm_mday)
+        return data_str
+
+    @property
+    def reverse_date_kml(self):
+        data_str = '{:04}_{:02}_{:02}_{:02}-{:02}'.format(
+        self._gps.timestamp_utc.tm_year,
+        self._gps.timestamp_utc.tm_mon,
+        self._gps.timestamp_utc.tm_mday,
+        self._gps.timestamp_utc.tm_hour,
+        self._gps.timestamp_utc.tm_min)
+        return data_str
+
+    @property
+    def time(self):
+        data_str = '{:02}:{:02}:{:02}'.format(
+        self._gps.timestamp_utc.tm_hour,
+        self._gps.timestamp_utc.tm_min,
+        self._gps.timestamp_utc.tm_sec)
+        return data_str
+
+
+    # String data
+    @property
+    def satellites_txt(self):
         data_str = "-"
         if self._gps.satellites is not None:
             data_str = '{}'.format(self._gps.satellites)
         return data_str
 
     @property
-    def hdilution(self):
+    def hdilution_txt(self):
         data_str = "-"
         if self._gps.horizontal_dilution is not None:
             data_str = '{}'.format(self._gps.horizontal_dilution)
         return data_str
 
     @property
-    def geoid_height(self):
+    def geoid_height_txt(self):
         data_str = "-"
         if self._gps.height_geoid is not None:
             data_str = '{}'.format(self._gps.height_geoid)
         return data_str
 
     @property
-    def date(self):
-        data_str = '{:02}.{:02}.{:04}'.format(
-        self._gps.timestamp_utc.tm_mday,  # Grab parts of the time from the
-        self._gps.timestamp_utc.tm_mon,   # struct_time object that holds
-        self._gps.timestamp_utc.tm_year)  # the fix time.  Note you might
-        return data_str
-
-    @property
-    def reverse_date(self):
-        data_str = '{:04}_{:02}_{:02}'.format(
-        self._gps.timestamp_utc.tm_year,  # the fix time.  Note you might
-        self._gps.timestamp_utc.tm_mon,   # struct_time object that holds
-        self._gps.timestamp_utc.tm_mday)  # Grab parts of the time from the
-        return data_str
-
-    @property
-    def reverse_date_kml(self):
-        data_str = '{:04}_{:02}_{:02}_{:02}-{:02}'.format(
-        self._gps.timestamp_utc.tm_year,  # the fix time.  Note you might
-        self._gps.timestamp_utc.tm_mon,   # struct_time object that holds
-        self._gps.timestamp_utc.tm_mday,  # Grab parts of the time from the
-        self._gps.timestamp_utc.tm_hour,  # not get all data like year, day,
-        self._gps.timestamp_utc.tm_min)   # month!
-        return data_str
-
-    @property
-    def time(self):
-        data_str = '{:02}:{:02}:{:02}'.format(
-        self._gps.timestamp_utc.tm_hour,  # not get all data like year, day,
-        self._gps.timestamp_utc.tm_min,   # month!
-        self._gps.timestamp_utc.tm_sec)
-        return data_str
-
-    @property
-    def latitude_raw(self):
-        # 47.51
-        return self._gps.latitude
-
-    @property
-    def longitude_raw(self):
-        # 7.59649
-        return self._gps.longitude
-
-    @property
-    def latitude(self):
+    def latitude_txt(self):
         Deg = '{:d}'.format(int(self._gps.latitude))
         Min = '{0:.3f}'.format((self._gps.latitude % 1) * 60)
         if self._gps.latitude > 0:
@@ -121,7 +176,7 @@ class GPS:
         return Deg,Min,NS
 
     @property
-    def longitude(self):
+    def longitude_txt(self):
         Deg = '{:d}'.format(int(self._gps.longitude))
         Min = '{0:.3f}'.format((self._gps.longitude % 1) * 60)
         if self._gps.longitude > 0:
@@ -131,14 +186,28 @@ class GPS:
         return Deg,Min,EW
 
     @property
-    def speed(self):
+    def speed_knots_txt(self):
         data_str = "-"
         if self._gps.speed_knots is not None:
             data_str = '{0:.1f}'.format(self._gps.speed_knots)
         return data_str
 
     @property
-    def course(self):
+    def speed_mph_txt(self):
+        data_str = "-"
+        if self._gps.speed_mph is not None:
+            data_str = '{0:.1f}'.format(self._gps.speed_mph)
+        return data_str
+
+    @property
+    def speed_kmh_txt(self):
+        data_str = "-"
+        if self._gps.speed_kmh is not None:
+            data_str = '{0:.1f}'.format(self._gps.speed_kmh)
+        return data_str
+
+    @property
+    def heading_txt(self):
         data_str = "-"
         if self._gps.track_angle_deg is not None:
             if self._gps.speed_knots > 1:
@@ -146,14 +215,14 @@ class GPS:
         return data_str
 
     @property
-    def altitude(self):
+    def altitude_txt(self):
         data_str = "-"
         if self._gps.altitude_m is not None:
             data_str = '{}'.format(self._gps.altitude_m)
         return data_str
 
-    # ---- APRS ----
 
+    # ---- APRS ----
     def _latitude_aprs(self):
         Deg = '{:02d}'.format(int(self._gps.latitude))
         Min = '{0:.2f}'.format((self._gps.latitude % 1) * 60)
@@ -185,7 +254,7 @@ class GPS:
             data_str = '{:03}'.format(int(round(self._gps.speed_knots)))
         return data_str
 
-    def _course_aprs(self):
+    def _heading_aprs(self):
         data_str = "000"
         if self._gps.track_angle_deg is not None:
             if self._gps.speed_knots > 0:
@@ -200,11 +269,10 @@ class GPS:
 
     @property
     def aprs_position(self):
-        return '@{}{}/{}>{}/{}/A={}'.format(self._dhm_aprs(), self._latitude_aprs(), self._longitude_aprs(), self._course_aprs(), self._speed_aprs(), self._altitude_aprs())
-    
+        return '@{}{}/{}>{}/{}/A={}'.format(self._dhm_aprs(), self._latitude_aprs(), self._longitude_aprs(), self._heading_aprs(), self._speed_aprs(), self._altitude_aprs())
+
 
     # ---- LOG ----
-
     @property
     def latitude_log(self):
         data_str = '{0:.6f}'.format(self._gps.latitude)
@@ -214,7 +282,6 @@ class GPS:
     def longitude_log(self):
         data_str = '{0:.6f}'.format(self._gps.longitude)
         return data_str
-
 
 
 """
