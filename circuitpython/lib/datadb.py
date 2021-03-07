@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-class Data_DB:
+class DATA_DB:
 
     buffer_stop  = const(0x01)
     buffer_shift = const(0x02)
@@ -33,6 +33,10 @@ class Data_DB:
             raise StopIteration
 
     @property
+    def size(self):
+        return self._size
+
+    @property
     def clear(self):
         self._buffer.clear
         self._pointer = 0
@@ -55,6 +59,7 @@ class Data_DB:
                 self._buffer[l - 1] = data
 
     def get(self, pos):
+        # print("data_db",pos, self._buffer)
         if pos >= 0 and pos < len(self._buffer):
             return self._buffer[pos]
         else:
