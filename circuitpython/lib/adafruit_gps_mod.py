@@ -96,6 +96,8 @@ class GPS:
         self.altitude_m = None
         self.height_geoid = None
         self.speed_knots = None
+        self.speed_mph = None
+        self.speed_kmh = None
         self.track_angle_deg = None
         """
         self.satellites_prev = None
@@ -293,6 +295,8 @@ class GPS:
 
         # Parse out speed and other simple numeric values.
         self.speed_knots = _parse_float(data[6])
+        self.speed_mph = self.speed_knots * 1.15078
+        self.speed_kmh = self.speed_knots * 1.852  
         self.track_angle_deg = _parse_float(data[7])
 
         # Parse date.
