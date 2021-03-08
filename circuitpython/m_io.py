@@ -7,7 +7,7 @@ import board
 import busio
 import digitalio
 
-import neopixel
+# import neopixel
 from sdcard import SD_Card
 from sensors import BMP280
 from sensors import LIS3DH
@@ -16,8 +16,8 @@ from gps import GPS
 from trx import DRA818x
 from voltmeter import VOLTMETER
 
-NEOpix = neopixel.NeoPixel(board.NEOPIXEL, 1)
-NEOpix[0] = (0, 0, 0) # set off
+# NEOpix = neopixel.NeoPixel(board.NEOPIXEL, 1)
+# NEOpix[0] = (0, 0, 0) # set off
 
 InfoLED1 = digitalio.DigitalInOut(board.D10)
 InfoLED1.direction = digitalio.Direction.OUTPUT

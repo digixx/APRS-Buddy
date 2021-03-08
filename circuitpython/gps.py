@@ -55,12 +55,14 @@ class GPS:
     def fix(self):
         return self._gps.fix_quality
 
+    '''
     @property
     def fix_3d(self):
         if self._gps.valid:
             return self._gps.fix_quality_3d
         else:
             return 0
+    '''
 
     # RAW data - for calculations
     @property
@@ -80,12 +82,14 @@ class GPS:
             data = self._gps.speed_knots
         return data
 
+    '''
     @property
     def speed_mph(self):
         data = 0
         if self._gps.speed_mph is not None:
             data = self._gps.speed_mph
         return data
+    '''
 
     @property
     def speed_kmh(self):
@@ -108,6 +112,7 @@ class GPS:
             data = self._gps.altitude_m
         return data
 
+    '''
     @property
     def date(self):
         data_str = '{:02}.{:02}.{:04}'.format(
@@ -115,7 +120,9 @@ class GPS:
         self._gps.timestamp_utc.tm_mon,
         self._gps.timestamp_utc.tm_year)
         return data_str
+    '''
 
+    '''
     @property
     def reverse_date(self):
         data_str = '{:04}_{:02}_{:02}'.format(
@@ -123,7 +130,9 @@ class GPS:
         self._gps.timestamp_utc.tm_mon,
         self._gps.timestamp_utc.tm_mday)
         return data_str
+    '''
 
+    '''
     @property
     def reverse_date_kml(self):
         data_str = '{:04}_{:02}_{:02}_{:02}-{:02}'.format(
@@ -133,6 +142,7 @@ class GPS:
         self._gps.timestamp_utc.tm_hour,
         self._gps.timestamp_utc.tm_min)
         return data_str
+    '''
 
     @property
     def time(self):
@@ -143,7 +153,7 @@ class GPS:
         return data_str
 
 
-    # String data
+    '''
     @property
     def satellites_txt(self):
         data_str = "-"
@@ -165,6 +175,8 @@ class GPS:
             data_str = '{}'.format(self._gps.height_geoid)
         return data_str
 
+    '''
+
     @property
     def latitude_txt(self):
         Deg = '{:d}'.format(int(self._gps.latitude))
@@ -185,6 +197,7 @@ class GPS:
             EW = "W"
         return Deg,Min,EW
 
+    '''
     @property
     def speed_knots_txt(self):
         data_str = "-"
@@ -220,7 +233,7 @@ class GPS:
         if self._gps.altitude_m is not None:
             data_str = '{}'.format(self._gps.altitude_m)
         return data_str
-
+    '''
 
     # ---- APRS ----
     def _latitude_aprs(self):

@@ -2,7 +2,11 @@
 #
 # SPDX-License-Identifier: MIT
 
-import sys
+# import sys
+import gc
+
+print("MAIN: First Memory", gc.mem_free())
+
 import board
 import time
 import events
@@ -20,14 +24,14 @@ gps_fix_status = vars.Values("0")
 
 # GPS Module
 GPS = m_io.init_gps()
-GPS.debugging(True)
+GPS.debugging(False)
 
 # Sensors
 ENV = m_io.init_environment()
-ENV.debugging(True)
+ENV.debugging(False)
 
 ACC = m_io.init_acc()
-ACC.debugging(True)
+ACC.debugging(False)
 
 '''
 # SD Card
@@ -45,73 +49,52 @@ else:
 '''
 
 BEACON = SMARTBEACON()
-BEACON.debugging(True)
+BEACON.debugging(False)
 BEACON.enabled = True
-
 
 # TRX
 TRX = m_io.init_trx()
 TRX.debugging(True)
-TRX.enabled = 1
-
+TRX.enabled = 0
 TRX.tx_frequency = 144.800
 TRX.rx_frequency = 144.800
 TRX.squelch_level = 1
 TRX.init()
 TRX.volume = 2
-TRX.tail_tone = 0
-
-TRX.APRS.debug = False
 TRX.APRS.source = 'HB9FZG-4'
 
 # Voltmeter
 VMTR = m_io.init_voltmeter()
-VMTR.debugging(True)
-
-loops = 0
+VMTR.debugging(False)
 
 while True:
 	tstart = time.monotonic()
 	GPS.update()
+
 	tstop = time.monotonic()
 
 	if tstop - tstart > 0.5:
 		print("MAIN: Update overload")
 
 	if ev1sec.is_due:
-		# Environment
-		# print("Temp / Pressure:", ENV.temp, ENV.pressure)
 		if gps_fix_status.has_changed(GPS.fix > 0):
 			print("GPS: Fix changed:", GPS.fix)
 
-		# ACC Sensor
-		x, y, z = [value / ACC.standard_gravity for value in ACC.acceleration]
-		# print("ACC: x = %0.3fG, y = %0.3fG, z = %0.3fG" % (x, y, z))
-
-		# GPS
-		if GPS.is_valid:
-			pass
-
-		
-		# show power
-		# print("Voltage: {:.2f}".format(VMTR.voltage))
-
-		BEACON.update(GPS)
+		if BEACON.update(GPS) == True:
+			gc.collect()
+			TRX.APRS.information = GPS.aprs_position + " Batt:{:.1f}V".format(VMTR.voltage)
+			TRX.send_APRS()
 
 	if ev5sec.is_due:
 		if GPS.is_valid:
-			TRX.APRS.information = GPS.aprs_position + " Batt:{:.1f}V".format(VMTR.voltage)
+			# TRX.APRS.information = GPS.aprs_position + " Batt:{:.1f}V".format(VMTR.voltage)
 			# TRX.dmo_connect()
-			# print("APRS-MSG:", TRX.APRS.information)
-			if loops > 0:
-				TRX.send_APRS()
-				loops =- 1
+
 			# sys.exit()
-			# pass
+			pass
 
 	if ev10sec.is_due:
 		ENV.info()
 		ACC.info()
 		VMTR.info()
 		GPS.info()
-	

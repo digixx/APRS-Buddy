@@ -5,13 +5,13 @@
 '''
 Class for transforming APRS data into audio-byte-array using NRZI encoding
 '''
+import gc
 import math
 import array
 
 class AFSK():
-    debugging = False
-    AX25_FLAG = 0x7e    # AX.25 Flag (Frame Deliminator, not affected from bit stuffing)
 
+    AX25_FLAG = 0x7e    # AX.25 Flag (Frame Deliminator, not affected from bit stuffing)
     _mark = 0
     _space = 1
     _start_frequency = _mark
@@ -26,8 +26,9 @@ class AFSK():
         self._frequency_space = frequency_space
         self._frequency_mark = frequency_mark
         self._phase = 0
-        self._preamble_head_length = 90
-        self._preamble_tail_length = 10
+        self._preamble_head_length = 150
+        self._preamble_tail_length = 15
+        # self._test = 0
 
         self._space_preemphasis = 1.5
         self._mark_preemphasis = 0.6
@@ -35,6 +36,8 @@ class AFSK():
         self._datapoints_per_bit = self._sample_rate / self._bps_rate
         self._space_degree_incr = int(360 * self._frequency_space / self._bps_rate / self._datapoints_per_bit)
         self._mark_degree_incr = int(360 * self._frequency_mark / self._bps_rate / self._datapoints_per_bit)
+
+        self._debugging = False
 
         # calculate static sinus tables for every degree
         self._sinus_table_mark = []
@@ -48,7 +51,6 @@ class AFSK():
             sinus_value = (math.sin(math.pi * 2 * degree / 360))
             sinus_table_dac_value = round(sinus_value * (self._DAC_range * self._space_preemphasis / 2 ) + self._DAC_idle_level)
             self._sinus_table_space.append(sinus_table_dac_value)
-
         self._init_sequence()
 
     @property
@@ -99,7 +101,7 @@ class AFSK():
             self._bit_stuff_cntr = 0
 
     def _prime_dac_level(self):
-        for x in range(0,50):
+        for x in range(0,30):
             self._sequence.append(self._DAC_idle_level)
 
     def create_afsk_bit_pattern(self, data):
@@ -111,3 +113,4 @@ class AFSK():
         self._add_preamble(self._preamble_tail_length)
         self._prime_dac_level()
         return self._sequence
+

@@ -18,14 +18,10 @@ class SMARTBEACON:
 		self._last_beacon_heading = None
 		self._last_beacon_time = None
 		self._heading_log = DATA_DB(size, mode)
-
-		self._heading_change = 30 # degrees
 		self._heading_deviation_threshold = 2 # percent
-
 		self._beacon_nonmove_rate = 600 # seconds
 		self._beacon_hold_time = 15 # seconds
 		self._beacon_distance = 1.5 # km
-
 		self._debugging = False
 
 	@property
@@ -35,16 +31,9 @@ class SMARTBEACON:
 	@enabled.setter
 	def enabled(self, v):
 		self._enabled = v
-
 	
 	def debugging(self, mode):
 		self._debugging = mode
-
-	'''
-	max. Beacon rate = 1 Min.
-	Send Beacon every 3 km distance or earlier when heading has changed more than 10? degrees
-
-	'''
 
 	def update(self, gps):
 		send_beacon = False
@@ -53,7 +42,7 @@ class SMARTBEACON:
 				current_position = gps.latitude, gps.longitude
 				self._heading_log.add(gps.heading)
 				
-				# Check heading deviation
+				# Check heading deviation / yamartino
 				heading_deviation = 0
 				if self._last_beacon_position != None:
 					if  len(self._heading_log) == self._heading_log.size:
@@ -108,26 +97,9 @@ class SMARTBEACON:
 		else:
 			if self._debugging == True:
 				print("BEACON: disabled")
-
 		return send_beacon
 
 	# -----------------------------------------------
-
-	'''
-	def yamartino(thetalist):
-		s=0
-		c=0
-		n=0.0
-		for theta in thetalist:
-			s=s+sin(radians(theta))
-			c=c+cos(radians(theta))
-			n+=1
-		s=s/n
-		c=c/n
-		eps=(1-(s**2+c**2))**0.5
-		sigma=asin(eps)*(1+(2.0/3.0**0.5-1)*eps**3)
-		return degrees(sigma)
-	'''
 
 	def _calc_distance(self, coord1,coord2):
 	    lat1, lon1 = coord1
