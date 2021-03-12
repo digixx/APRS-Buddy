@@ -5,7 +5,6 @@
 '''
 Class for transforming APRS data into audio-byte-array using NRZI encoding
 '''
-import gc
 import math
 import array
 
@@ -14,43 +13,28 @@ class AFSK():
     AX25_FLAG = 0x7e    # AX.25 Flag (Frame Deliminator, not affected from bit stuffing)
     _mark = 0
     _space = 1
-    _start_frequency = _mark
+    _start_frequency = _space # we start with space because the radios audio levels faster
 
-    _DAC_range = 140
+    _DAC_range = 180
     _DAC_idle_level = 120
 
-    def __init__(self, bps_rate = 1200, frequency_space = 2200, frequency_mark = 1200, _datapoints_per_bit = 30):
-        self._bps_rate = bps_rate
+    def __init__(self, bps_rate = 1200, frequency_space = 2200, frequency_mark = 1200, _datapoints_per_bit = 15):
         self._datapoints_per_bit = _datapoints_per_bit
-        self._sample_rate = self._bps_rate * self._datapoints_per_bit
-        self._frequency_space = frequency_space
-        self._frequency_mark = frequency_mark
+        self._sample_rate = bps_rate * self._datapoints_per_bit
         self._phase = 0
-        self._preamble_head_length = 150
-        self._preamble_tail_length = 15
-        # self._test = 0
+        self._preamble_head_length = 30
+        self._preamble_tail_length = 10
 
-        self._space_preemphasis = 1.5
-        self._mark_preemphasis = 0.6
-
-        self._datapoints_per_bit = self._sample_rate / self._bps_rate
-        self._space_degree_incr = int(360 * self._frequency_space / self._bps_rate / self._datapoints_per_bit)
-        self._mark_degree_incr = int(360 * self._frequency_mark / self._bps_rate / self._datapoints_per_bit)
-
+        self._datapoints_per_bit = self._sample_rate / bps_rate
+        self._space_degree_incr = int(360 *frequency_space / bps_rate / self._datapoints_per_bit)
+        self._mark_degree_incr = int(360 * frequency_mark / bps_rate / self._datapoints_per_bit)
         self._debugging = False
 
-        # calculate static sinus tables for every degree
-        self._sinus_table_mark = []
+        self._sinus_table = []
         for degree in range(0,360):
             sinus_value = (math.sin(math.pi * 2 * degree / 360))
-            sinus_table_dac_value = round(sinus_value * (self._DAC_range * self._mark_preemphasis / 2 ) + self._DAC_idle_level)
-            self._sinus_table_mark.append(sinus_table_dac_value)
-
-        self._sinus_table_space = []
-        for degree in range(0,360):
-            sinus_value = (math.sin(math.pi * 2 * degree / 360))
-            sinus_table_dac_value = round(sinus_value * (self._DAC_range * self._space_preemphasis / 2 ) + self._DAC_idle_level)
-            self._sinus_table_space.append(sinus_table_dac_value)
+            sinus_table_dac_value = round(sinus_value * (self._DAC_range / 2 ) + self._DAC_idle_level)
+            self._sinus_table.append(sinus_table_dac_value)
         self._init_sequence()
 
     @property
@@ -67,11 +51,11 @@ class AFSK():
         if self._tone == self._space:
             for dp in range(0, self._datapoints_per_bit):
                 self._phase = (self._phase + self._space_degree_incr) % 360
-                self._sequence.append(self._sinus_table_space[self._phase])
+                self._sequence.append(self._sinus_table[self._phase])
         else:
             for dp in range(0, self._datapoints_per_bit):
                 self._phase = (self._phase + self._mark_degree_incr) % 360
-                self._sequence.append(self._sinus_table_mark[self._phase])
+                self._sequence.append(self._sinus_table[self._phase])
 
         self._bit_stuff_cntr += 1
 
@@ -93,7 +77,7 @@ class AFSK():
                 self._add_tone_to_sequence()
 
     def _add_preamble(self, length):
-        for x in range(length):
+        for l in range(length):
             for x in range(0, 8):
                 if self.AX25_FLAG & (1 << x) == 0:
                     self._swap_tone()

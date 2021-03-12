@@ -55,14 +55,12 @@ class GPS:
     def fix(self):
         return self._gps.fix_quality
 
-    '''
     @property
     def fix_3d(self):
         if self._gps.valid:
             return self._gps.fix_quality_3d
         else:
             return 0
-    '''
 
     # RAW data - for calculations
     @property
@@ -82,14 +80,12 @@ class GPS:
             data = self._gps.speed_knots
         return data
 
-    '''
     @property
     def speed_mph(self):
         data = 0
         if self._gps.speed_mph is not None:
             data = self._gps.speed_mph
         return data
-    '''
 
     @property
     def speed_kmh(self):
@@ -111,6 +107,16 @@ class GPS:
         if self._gps.altitude_m is not None:
             data = self._gps.altitude_m
         return data
+
+    '''
+    @property
+    def time(self):
+        data_str = '{:02}:{:02}:{:02}'.format(
+        self._gps.timestamp_utc.tm_hour,
+        self._gps.timestamp_utc.tm_min,
+        self._gps.timestamp_utc.tm_sec)
+        return data_str
+    '''
 
     '''
     @property
@@ -144,15 +150,6 @@ class GPS:
         return data_str
     '''
 
-    @property
-    def time(self):
-        data_str = '{:02}:{:02}:{:02}'.format(
-        self._gps.timestamp_utc.tm_hour,
-        self._gps.timestamp_utc.tm_min,
-        self._gps.timestamp_utc.tm_sec)
-        return data_str
-
-
     '''
     @property
     def satellites_txt(self):
@@ -167,14 +164,6 @@ class GPS:
         if self._gps.horizontal_dilution is not None:
             data_str = '{}'.format(self._gps.horizontal_dilution)
         return data_str
-
-    @property
-    def geoid_height_txt(self):
-        data_str = "-"
-        if self._gps.height_geoid is not None:
-            data_str = '{}'.format(self._gps.height_geoid)
-        return data_str
-
     '''
 
     @property
@@ -197,7 +186,6 @@ class GPS:
             EW = "W"
         return Deg,Min,EW
 
-    '''
     @property
     def speed_knots_txt(self):
         data_str = "-"
@@ -233,7 +221,6 @@ class GPS:
         if self._gps.altitude_m is not None:
             data_str = '{}'.format(self._gps.altitude_m)
         return data_str
-    '''
 
     # ---- APRS ----
     def _latitude_aprs(self):
@@ -284,7 +271,6 @@ class GPS:
     def aprs_position(self):
         return '@{}{}/{}>{}/{}/A={}'.format(self._dhm_aprs(), self._latitude_aprs(), self._longitude_aprs(), self._heading_aprs(), self._speed_aprs(), self._altitude_aprs())
 
-
     # ---- LOG ----
     @property
     def latitude_log(self):
@@ -295,7 +281,6 @@ class GPS:
     def longitude_log(self):
         data_str = '{0:.6f}'.format(self._gps.longitude)
         return data_str
-
 
 """
 ct = time.monotonic()

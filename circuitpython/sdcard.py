@@ -44,8 +44,8 @@ class SD_Card:
         try:
             os.mkdir(self._root + directory)
         except OSError as exc:
-            if exc.errno == errno.EEXIST:
-                print('OSError, Directory Exists:', directory)
+            if exc.args[0] == 17: # errno.EEXIST:
+                print('OSInfo: dir exists:', directory)
                 pass
             else:
                 raise exc

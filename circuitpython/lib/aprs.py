@@ -6,7 +6,6 @@
 Class for generating array containing APRS data to be send
 '''
 import array
-# import aprs_crc
 
 class APRS():
 
@@ -50,7 +49,7 @@ class APRS():
     AX25_APRS_UI_FRAME = 0x03       # Frame Type
     AX25_PROTO_NO_LAYER3 = 0xf0     # Layer 3 protocol
 
-    def __init__(self, source = 'NOCALL-0', destination = 'APZDIY-12', digipeaters = 'WIDE1-1', information = '>NoText'):
+    def __init__(self, source = 'HB9FZG-4', destination = 'APZDIY-12', digipeaters = 'WIDE1-1,WIDE2-1', information = '>Hello'):
         self.source = source
         self.destination = destination
         self.digipeaters = digipeaters
@@ -164,7 +163,6 @@ class APRS():
         ax25_dest = self._shift_1bit_left(n)
         ax25_dest += [0xf0 | (s << 1)]
         return ax25_dest
-
 
     '''
     *AX25 - Digipeater addresses

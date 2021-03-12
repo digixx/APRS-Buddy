@@ -27,6 +27,7 @@ InfoLED2.direction = digitalio.Direction.OUTPUT
 InfoLED1.value = False
 InfoLED2.value = False
 
+
 # Create the SPI bus for multiple devices
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
 
