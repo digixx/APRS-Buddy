@@ -1,1 +1,0 @@
-Adafruit CircuitPython 6.1.0 on 2021-01-21; Adafruit Feather M4 Express with samd51j19

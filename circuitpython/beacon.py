@@ -19,9 +19,10 @@ class SMARTBEACON:
 		self._last_beacon_time = None
 		self._heading_log = DATA_DB(size, mode)
 		self._heading_deviation_threshold = 2 # percent
-		self._beacon_nonmove_rate = 600 # seconds
+		self._beacon_nonmove_rate = 300 # seconds
 		self._beacon_hold_time = 15 # seconds
 		self._beacon_distance = 1.5 # km
+		self._minimum_heading_speed = 2 # km/h
 		self._debugging = False
 
 	@property
@@ -31,7 +32,7 @@ class SMARTBEACON:
 	@enabled.setter
 	def enabled(self, v):
 		self._enabled = v
-	
+
 	def debugging(self, mode):
 		self._debugging = mode
 
@@ -41,7 +42,7 @@ class SMARTBEACON:
 			if gps.is_valid:
 				current_position = gps.latitude, gps.longitude
 				self._heading_log.add(gps.heading)
-				
+
 				# Check heading deviation / yamartino
 				heading_deviation = 0
 				if self._last_beacon_position != None:
@@ -60,7 +61,8 @@ class SMARTBEACON:
 						heading_deviation = math.degrees(sigma)
 						# print("heading_deviation", heading_deviation)
 						if heading_deviation > self._heading_deviation_threshold:
-							send_beacon = True
+							if gps.speed_kmh > self._minimum_heading_speed:
+								send_beacon = True
 				else:
 					self._last_beacon_position = current_position
 					self._last_beacon_heading = gps.heading
@@ -75,28 +77,27 @@ class SMARTBEACON:
 				# Check if non moving timer is reached
 				nonmove_timer = self._beacon_nonmove_rate - (time.monotonic() - self._last_beacon_time)
 				if nonmove_timer < 0:
-					nonmove_timer = 0
-				if time.monotonic() > (self._last_beacon_time + self._beacon_nonmove_rate):
 					send_beacon = True
 
 				hold_timer = self._beacon_hold_time - (time.monotonic() - self._last_beacon_time)
-				if hold_timer < 0:
-					hold_timer = 0
-				if time.monotonic() > (self._last_beacon_time + self._beacon_hold_time):
-					if send_beacon == True:
-						self._last_beacon_position = current_position
-						self._last_beacon_heading = gps.heading
-						self._last_beacon_time = time.monotonic()
-						print("BEACON NOW!")			
-
+				if hold_timer > 0:
+					send_beacon = False
+				
 				if self._debugging == True:
-					print("BEACON: enabled > Hold:{0:.0f} Dev:{1:.3f} Dist:{2:.3f} NoMove:{3:.0f}".format(hold_timer, heading_deviation, distance, nonmove_timer))
+					print("BEACON: + > Hold:{0:.0f} Dev:{1:.3f} Dist:{2:.3f} NoMove:{3:.0f}".format(hold_timer, heading_deviation, distance, nonmove_timer))
 			else:
 				if self._debugging == True:
-					print("BEACON: no GPS data")
+					print("BEACON: no GPS")
 		else:
 			if self._debugging == True:
-				print("BEACON: disabled")
+				print("BEACON: off")
+
+		if send_beacon == True:
+			self._last_beacon_position = current_position
+			self._last_beacon_heading = gps.heading
+			self._last_beacon_time = time.monotonic()
+			print("BEACON NOW!")
+
 		return send_beacon
 
 	# -----------------------------------------------
