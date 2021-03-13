@@ -19,7 +19,7 @@ class SMARTBEACON:
 		self._last_beacon_time = None
 		self._heading_log = DATA_DB(size, mode)
 		self._heading_deviation_threshold = 2 # percent
-		self._beacon_nonmove_rate = 300 # seconds
+		self._beacon_nonmove_rate = 600 # seconds
 		self._beacon_hold_time = 15 # seconds
 		self._beacon_distance = 1.5 # km
 		self._minimum_heading_speed = 2 # km/h
@@ -82,7 +82,7 @@ class SMARTBEACON:
 				hold_timer = self._beacon_hold_time - (time.monotonic() - self._last_beacon_time)
 				if hold_timer > 0:
 					send_beacon = False
-				
+
 				if self._debugging == True:
 					print("BEACON: + > Hold:{0:.0f} Dev:{1:.3f} Dist:{2:.3f} NoMove:{3:.0f}".format(hold_timer, heading_deviation, distance, nonmove_timer))
 			else:
