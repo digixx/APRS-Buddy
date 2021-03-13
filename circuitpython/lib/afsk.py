@@ -7,6 +7,8 @@ Class for transforming APRS data into audio-byte-array using NRZI encoding
 '''
 import math
 import array
+import gc
+
 
 class AFSK():
 
@@ -15,8 +17,10 @@ class AFSK():
     _space = 1
     _start_frequency = _space # we start with space because the radios audio levels faster
 
-    _DAC_range = 180
-    _DAC_idle_level = 120
+    _DAC_preemphasis_mark = 0.4
+    _DAC_preemphasis_space = 1
+    _DAC_amplitude = 125
+    _DAC_idle_level = 127
 
     def __init__(self, bps_rate = 1200, frequency_space = 2200, frequency_mark = 1200, _datapoints_per_bit = 15):
         self._datapoints_per_bit = _datapoints_per_bit
@@ -30,12 +34,15 @@ class AFSK():
         self._mark_degree_incr = int(360 * frequency_mark / bps_rate / self._datapoints_per_bit)
         self._debugging = False
 
+        # print("AFSK: before table", gc.mem_free())
         self._sinus_table = []
         for degree in range(0,360):
             sinus_value = (math.sin(math.pi * 2 * degree / 360))
-            sinus_table_dac_value = round(sinus_value * (self._DAC_range / 2 ) + self._DAC_idle_level)
+            sinus_table_dac_value = int(sinus_value * self._DAC_amplitude)
             self._sinus_table.append(sinus_table_dac_value)
+            # print(degree, sinus_table_dac_value, int(sinus_table_dac_value * self._DAC_preemphasis_space) + self._DAC_idle_level, int(sinus_table_dac_value * self._DAC_preemphasis_mark) + self._DAC_idle_level)
         self._init_sequence()
+        # print("AFSK: after table", gc.mem_free())
 
     @property
     def samplerate(self):
@@ -51,11 +58,13 @@ class AFSK():
         if self._tone == self._space:
             for dp in range(0, self._datapoints_per_bit):
                 self._phase = (self._phase + self._space_degree_incr) % 360
-                self._sequence.append(self._sinus_table[self._phase])
+                DAC_value = int(self._sinus_table[self._phase] * self._DAC_preemphasis_space) + self._DAC_idle_level
+                self._sequence.append(DAC_value)
         else:
             for dp in range(0, self._datapoints_per_bit):
                 self._phase = (self._phase + self._mark_degree_incr) % 360
-                self._sequence.append(self._sinus_table[self._phase])
+                DAC_value = int(self._sinus_table[self._phase] * self._DAC_preemphasis_mark) + self._DAC_idle_level
+                self._sequence.append(DAC_value)
 
         self._bit_stuff_cntr += 1
 
