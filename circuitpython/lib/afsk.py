@@ -8,7 +8,7 @@ Class for transforming APRS data into audio-byte-array using NRZI encoding
 Phase shifts for Datapoints per Bitrate
 
 Datapoints => shift values (1200 / 2200 Hz)
-30 => 12 / 22 degress * very high RAM usage, often memeroy error exeptions
+30 => 12 / 22 degress * very high RAM usage, often memory error exceptions
 20 => 18 / 33 degress
 15 => 24 / 44 degrees
 12 => 30 / 55 degrees * less than 2 datapoints per quarter-wave
