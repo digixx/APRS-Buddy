@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import gc
-print("MAIN: First Memory", gc.mem_free())
+print("MAIN: Mem start", gc.mem_free())
 
 import board
 import time
@@ -49,6 +49,7 @@ BEACON.enabled = True
 TRX = m_io.init_trx()
 TRX.debugging(True)
 TRX.init()
+TRX.APRS.source = "MYCALL-4"
 
 # Voltmeter
 VMTR = m_io.init_voltmeter()
@@ -59,7 +60,7 @@ while True:
 
 	if ev1sec.is_due:
 		if BEACON.update(GPS) == True:
-			TRX.APRS.information = GPS.aprs_position # + " Batt:{:.1f}V".format(VMTR.voltage)
+			TRX.APRS.information = GPS.aprs_position + " Batt:{:.1f}V".format(VMTR.voltage)
 			TRX.send_APRS()
 
 	if ev10sec.is_due:
