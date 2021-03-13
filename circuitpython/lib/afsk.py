@@ -4,11 +4,19 @@
 
 '''
 Class for transforming APRS data into audio-byte-array using NRZI encoding
+
+Phase shifts for Datapoints per Bitrate
+
+Datapoints => shift values (1200 / 2200 Hz)
+30 => 12 / 22 degress * very high RAM usage, often memeroy error exeptions
+20 => 18 / 33 degress
+15 => 24 / 44 degrees
+12 => 30 / 55 degrees * less than 2 datapoints per quarter-wave
 '''
+
 import math
 import array
 import gc
-
 
 class AFSK():
 
@@ -22,16 +30,15 @@ class AFSK():
     _DAC_amplitude = 125
     _DAC_idle_level = 127
 
-    def __init__(self, bps_rate = 1200, frequency_space = 2200, frequency_mark = 1200, _datapoints_per_bit = 15):
-        self._datapoints_per_bit = _datapoints_per_bit
-        self._sample_rate = bps_rate * self._datapoints_per_bit
+    def __init__(self, bps_rate = 1200, frequency_space = 2200, frequency_mark = 1200, datapoints_per_bit = 15):
+        self._datapoints_per_bit = datapoints_per_bit
+        self._sample_rate = bps_rate * datapoints_per_bit
         self._phase = 0
         self._preamble_head_length = 30
         self._preamble_tail_length = 10
 
-        self._datapoints_per_bit = self._sample_rate / bps_rate
-        self._space_degree_incr = int(360 *frequency_space / bps_rate / self._datapoints_per_bit)
-        self._mark_degree_incr = int(360 * frequency_mark / bps_rate / self._datapoints_per_bit)
+        self._space_degree_incr = int(360 * frequency_space / bps_rate / datapoints_per_bit)
+        self._mark_degree_incr = int(360 * frequency_mark / bps_rate / datapoints_per_bit)
         self._debugging = False
 
         # print("AFSK: before table", gc.mem_free())
