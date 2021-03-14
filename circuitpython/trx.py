@@ -12,8 +12,14 @@ from afsk import AFSK
 class DRA818x():
 
 	def __init__(self, uart, mic_audio, ptt_pin, enabled_pin, squelch_pin):
+		self.debugging = False
 		self.AFSK = AFSK()
 		self.APRS = APRS()
+
+		self.tx_frequency = 144.800
+		self.rx_frequency = 144.800
+		self.squelch_level = 1 # [0..8]
+
 		self._mic_audio = mic_audio
 		self._uart = uart
 
@@ -26,19 +32,13 @@ class DRA818x():
 		self._enabled.value = False
 
 		self._squelch_pin = squelch_pin # If True Squelch = active (no sound)
-		self._squelch_level = 1 # [0..8]
 
-		self._tx_frequency = 144.800
-		self._rx_frequency = 144.800
+
 
 		self._volume = 2
-		self._debugging = True
 		self._enable_ptt = True # set it to false to avoid sending real HF
 
 	# --- Hardware -------------------
-
-	def debugging(self, mode):
-		self._debugging = mode
 
 	@property
 	def ptt(self):
@@ -67,6 +67,7 @@ class DRA818x():
 
 	# --- Values -----------------------
 
+	'''
 	@property
 	def tx_frequency(self):
 		return self._tx_frequency
@@ -90,6 +91,7 @@ class DRA818x():
 	@squelch_level.setter
 	def squelch_level(self, v):
 		self._squelch_level = v
+	'''
 
 	@property
 	def volume(self):
@@ -110,7 +112,7 @@ class DRA818x():
 	def init(self):
 		self.enabled = True
 		time.sleep(0.5)
-		self._set_group(self._tx_frequency, self._rx_frequency, '0000', self._squelch_level, '0000')
+		self._set_group(self.tx_frequency, self.rx_frequency, '0000', self.squelch_level, '0000')
 		self._set_filter(0,0,0)
 		self.enabled = False
 
@@ -138,30 +140,29 @@ class DRA818x():
 		if self._enabled.value == True:
 			self._uart.write(data.encode())
 			response =  self._uart.readline()
-			if self._debugging == True:
-				if response != None:
-					response = ''.join([chr(b) for b in response])
-		else:
-			response = "n/a"
+			if response != None:
+				response = ''.join([chr(b) for b in response])
+			else:
+				response = "n/a"
 		return response
 
 	def _set_group(self, tx_freq, rx_freq, tx_ctcss, sq, rx_ctcss):
 		# set most values at once
 		command = 'AT+DMOSETGROUP=0,{:.4f},{:.4f},{},{},{}\r\n'.format(tx_freq, rx_freq, tx_ctcss, sq, rx_ctcss)
 		response = self._send(command)
-		if self._debugging == True:
+		if self.debugging == True:
 			print("TRX: set group: ", response)
 
 	def _set_volume(self, level):
 		# set audio out volume [1..8]
 		command = 'AT+DMOSETVOLUME={}\r\n'.format(level)
 		response = self._send(command)
-		if self._debugging == True:
+		if self.debugging == True:
 			print("TRX: set volume: ", response)
 
 	def _set_filter(self, emph, highpass, lowpass):
 		# This command is used to turn on/off Pre/de-emphasis, Highpass, Lowpass filter
 		command = 'AT+SETFILTER={},{},{}\r\n'.format(emph,highpass,lowpass)
 		response = self._send(command)
-		if self._debugging == True:
+		if self.debugging == True:
 			print("TRX: set filter: ", response)

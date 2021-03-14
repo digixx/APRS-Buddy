@@ -49,12 +49,12 @@ class APRS():
     AX25_APRS_UI_FRAME = 0x03       # Frame Type
     AX25_PROTO_NO_LAYER3 = 0xf0     # Layer 3 protocol
 
-    def __init__(self, source = 'HB9FZG-4', destination = 'APZDIY-12', digipeaters = 'WIDE1-1,WIDE2-1', information = '>Hello'):
+    def __init__(self, source = 'MYCALL-4', destination = 'APZDIY-12', digipeaters = 'WIDE1-1', information = '>Hello'):
         self.source = source
         self.destination = destination
         self.digipeaters = digipeaters
         self.information = information
-        self._debugging = False
+        self.debugging = False
 
         '''
         AX25 - Control field
@@ -106,9 +106,6 @@ class APRS():
         self._information = information
         self._ax25_information_field = self._set_ax25_information(self._information)
 
-    def debugging(self, mode):
-        self._debugging = mode
-
     def create_ax25_frame(self):
         ax25_frame = []
         ax25_frame += self._ax25_destination
@@ -121,7 +118,7 @@ class APRS():
         ax25_frame.append(self._get_crc_low_byte(self._ax25_fcs))
         ax25_frame.append(self._get_crc_high_byte(self._ax25_fcs))
 
-        if self._debugging == True:
+        if self.debugging == True:
             print("\n\nAPRS: AX25 packet data")
             print("APRS: Dest:", self.destination)
             print("APRS: Src :", self.source)

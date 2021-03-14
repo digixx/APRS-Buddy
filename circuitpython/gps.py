@@ -7,6 +7,7 @@ import adafruit_gps_mod
 class GPS:
 
     def __init__(self, uart):
+        self.debugging = False
         self._gps = adafruit_gps_mod.GPS(uart, debug = False)
         # Initialize the GPS module by changing what data it sends and at what rate.
         # These are NMEA extensions for PMTK_314_SET_NMEA_OUTPUT and
@@ -27,13 +28,8 @@ class GPS:
         # Turn on AIC (Active Interference Cancellation)
         self._gps.send_command(b'PMTK286,1')
 
-        self._debugging = False
-
-    def debugging(self, mode):
-        self._debugging = mode
-
     def info(self):
-        if self._debugging == True:
+        if self.debugging == True:
             print("GPS:", end = ' ')
             if self._gps.valid:
                 print("Fix", end = " > ")
@@ -108,7 +104,6 @@ class GPS:
             data = self._gps.altitude_m
         return data
 
-    '''
     @property
     def time(self):
         data_str = '{:02}:{:02}:{:02}'.format(
@@ -116,9 +111,7 @@ class GPS:
         self._gps.timestamp_utc.tm_min,
         self._gps.timestamp_utc.tm_sec)
         return data_str
-    '''
 
-    '''
     @property
     def date(self):
         data_str = '{:02}.{:02}.{:04}'.format(
@@ -126,9 +119,7 @@ class GPS:
         self._gps.timestamp_utc.tm_mon,
         self._gps.timestamp_utc.tm_year)
         return data_str
-    '''
 
-    '''
     @property
     def reverse_date(self):
         data_str = '{:04}_{:02}_{:02}'.format(
@@ -136,9 +127,7 @@ class GPS:
         self._gps.timestamp_utc.tm_mon,
         self._gps.timestamp_utc.tm_mday)
         return data_str
-    '''
 
-    '''
     @property
     def reverse_date_kml(self):
         data_str = '{:04}_{:02}_{:02}_{:02}-{:02}'.format(
@@ -148,9 +137,7 @@ class GPS:
         self._gps.timestamp_utc.tm_hour,
         self._gps.timestamp_utc.tm_min)
         return data_str
-    '''
 
-    '''
     @property
     def satellites_txt(self):
         data_str = "-"
@@ -164,7 +151,6 @@ class GPS:
         if self._gps.horizontal_dilution is not None:
             data_str = '{}'.format(self._gps.horizontal_dilution)
         return data_str
-    '''
 
     @property
     def latitude_txt(self):

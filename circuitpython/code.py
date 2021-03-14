@@ -17,18 +17,15 @@ ev10sec = events.Events(10)
 
 # GPS Module
 GPS = m_io.init_gps()
-GPS.debugging(False)
+GPS.debugging = False
 
 # Sensors
-
 ENV = m_io.init_environment()
-ENV.debugging(False)
-
+ENV.debugging = False
 ACC = m_io.init_acc()
-ACC.debugging(False)
+ACC.debugging = False
 
 # SD Card
-
 SDC = m_io.init_sdcard()
 if SDC.available():
 	SDC.create_dir('/logs')
@@ -41,19 +38,26 @@ if SDC.available():
 else:
 	print('no SD-Card found\n')
 
+# BEACON / detect fast direction changes
 BEACON = SMARTBEACON()
-BEACON.debugging(True)
+BEACON.debugging = True
 BEACON.enabled = True
+BEACON.nonmove_rate = 1200 # seconds
+BEACON.hold_time = 15 # seconds
+BEACON.min_distance = 1.5 # km
+BEACON.min_heading_speed = 2 # km/h
+BEACON.heading_deviation_threshold = 2 # percent
 
 # TRX
 TRX = m_io.init_trx()
-TRX.debugging(True)
+TRX.debugging = True
 TRX.init()
-TRX.APRS.source = "MYCALL-4"
+TRX.APRS.source = "HB9FZG-4"
+TRX.APRS.digipeaters = 'WIDE1-1,WIDE2-1'
 
 # Voltmeter
 VMTR = m_io.init_voltmeter()
-VMTR.debugging(False)
+VMTR.debugging = True
 
 while True:
 	GPS.update()
@@ -68,4 +72,4 @@ while True:
 		ACC.info()
 		VMTR.info()
 		GPS.info()
-		print("MAIN: Mem", gc.mem_free())
+		
