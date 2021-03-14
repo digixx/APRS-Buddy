@@ -7,9 +7,14 @@ print("MAIN: Mem start", gc.mem_free())
 
 import board
 import time
+import neopixel
 import events
 import m_io
 from beacon import SMARTBEACON
+
+# Shutoff Neopixel
+pixels = neopixel.NeoPixel(board.NEOPIXEL, 1)
+pixels[0] = (0, 0, 0)
 
 # Declare Events
 ev1sec = events.Events(1)
@@ -72,4 +77,3 @@ while True:
 		ACC.info()
 		VMTR.info()
 		GPS.info()
-		
