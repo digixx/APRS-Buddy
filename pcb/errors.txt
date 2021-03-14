@@ -1,0 +1,4 @@
+Signals PTT and Sleep for the Radio module are twisted
+Mounting holes for some modules have wrong positions
+R7 must be 10k
+ACC Sensor has been replaced with LIS3DH because of lack of driver for SPI. Because the signal positions on the connector are different, a interface is neccessary
