@@ -7,7 +7,7 @@ import analogio
 
 class VOLTMETER:
 
-	def __init__(self, ADC, span = 3.3, divider = 11):
+	def __init__(self, ADC, span = 3.3, divider = 1):
 		self.debugging = False
 		self._adc = analogio.AnalogIn(ADC)
 		self._span = span
